@@ -2,40 +2,51 @@ package org.example;
 
 import java.io.*;
 import java.util.*;
-
 import org.jsoup.*;
-
 import com.opencsv.CSVWriter;
 import org.jsoup.nodes.Document;
 
 public class Indexer {
-    final private Website ROOT;
-    // final private String DATAPATH;
-    private File file;
-    private CSVWriter csvWriter;
-    private ArrayList<String> urls;
+    private final File FILE;
+    private final FileWriter FILEWRITER;
+    private final ArrayList<String> EXISTINGURLS;
+    private final ArrayList<String> URLS;
 
-    public Indexer(Website root, String filePath) {
-        ROOT = root;
-        urls = new ArrayList<>();
-        // this.DATAPATH = filePath;
-        file = new File(filePath + "\\data.csv");
-        System.out.println(file.toString());
+    public Indexer(String filePath) {
+
+        // URLS Storage
+        URLS = new ArrayList<>();
+        EXISTINGURLS = new ArrayList<>();
+
+        // Creates a file object at the specified path
+        FILE = new File(filePath + "\\data.csv");
+        System.out.println(FILE);
+
+        // Reads and stores existing
+        try {
+            Scanner scanner = new Scanner(FILE);
+                while (scanner.hasNextLine()) {
+                    EXISTINGURLS.add(scanner.nextLine());
+                }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
         // Checks for pre-existing data
-        if (file.exists()) {
-            initializeWriter(file);
+        if (FILE.exists()) {
+            FILEWRITER = initializeFileWriter(FILE);
         } else {
             try {
-                file.createNewFile();
-                csvWriter = initializeWriter(file);
+                FILE.createNewFile();
+                FILEWRITER = initializeFileWriter(FILE);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    private CSVWriter initializeWriter(File file) {
+    @Deprecated
+    private CSVWriter initializeCSVWriter(File file) {
         try {
             return new CSVWriter(new FileWriter(file));
         } catch (IOException e) {
@@ -43,8 +54,18 @@ public class Indexer {
         }
     }
 
-    public void indexURLS() throws FileNotFoundException {
-        Scanner scanner = new Scanner(file);
+    // Tries to create a FileWriter object with a FILE object to write to and returns it
+    private FileWriter initializeFileWriter(File file) {
+        try {
+            return new FileWriter(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // Failure 1
+    private void indexURLS() throws FileNotFoundException {
+        Scanner scanner = new Scanner(FILE);
         String temp = "";
 
         while (scanner.hasNextLine()) {
@@ -66,9 +87,10 @@ public class Indexer {
         }
     }
 
-    public void indexURLS(String url) throws IOException {
+    // Failure 2
+    private void indexURLS(String url) throws IOException {
         // Implementing test
-        Document websiteContents = Jsoup.connect(ROOT.getUrl()).get();
+        Document websiteContents = Jsoup.connect(url).get();
         String temp = String.valueOf(websiteContents.body());
 
         String[] lines = temp.split("\n");
@@ -83,25 +105,70 @@ public class Indexer {
                 } else {
                     int end = currentLine.indexOf("\">", index + 1);
                     temp = currentLine.substring(index + 6, end - 2);
-                    urls.add(temp);
+                    URLS.add(temp);
                     currentLine = currentLine.substring(end);
                 }
             }
             }
         }
 
-        public void indexURLSClean(String url) {
+        // Success
+        public void indexURLSClean(String url) throws IOException {
+            // Connects to web page and fetches the body
+            Document websiteContents = Jsoup.connect(url).get();
+            String temp = String.valueOf(websiteContents.body());
 
+            // Limiter used to delimit the string being searched
+            int limiter = 0;
+
+            // Loops through HTML body and fetches all HTTPS links held within.
+            while (temp.indexOf("href=\"https", limiter) > -1) {
+                // Links in HTML start with the keyword "href=""
+                // I added the HTTPS filter to make sure that it only returns HTTPS links
+                int start = temp.indexOf("href=\"https", limiter);
+
+                // Searches for the end of link denoted by a quote
+                // Usually bad practice in HTML code to put quotes in web links so the margin of error is minimal
+                int end = temp.indexOf("\"", start + 6);
+
+                // Changes the frame of reference for the next loop iteration to make sure the
+                limiter = end + 1;
+
+                URLS.add(temp.substring(start + 6, end));
+            }
         }
 
-        public void writeToCSV(ArrayList<String> myData) {
-            Iterable<String[]> dataIterator = null;
+        // Takes existing URLS ArrayList<String> and writes them to a CSV file format
+        public void writeToCSV() throws IOException {
 
-            csvWriter.writeAll(dataIterator);
+            for (String existingurl : EXISTINGURLS) {
+                FILEWRITER.write(existingurl);
+            }
+
+            for (String url : URLS) {
+                FILEWRITER.write(url);
+            }
+
+            FILEWRITER.close();
         }
 
-        public void printValues() {
-            for (String url : urls) {
+        public void clearCSV() throws IOException {
+            try {
+                FILEWRITER.write("");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // Prints the values from
+        public void printNewURLS() {
+            for (String url : URLS) {
+                System.out.println(url);
+            }
+        }
+
+        public void printOldURLS() {
+            for (String url : EXISTINGURLS) {
                 System.out.println(url);
             }
         }

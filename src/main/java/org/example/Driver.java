@@ -8,9 +8,11 @@ import java.util.Scanner;
 
 public class Driver {
     public static void main(String[] args) throws IOException {
-        Indexer test = new Indexer(new Website("https://en.wikipedia.org/wiki/Cult_of_the_Lamb"), "C:\\Users\\jvcer\\IdeaProjects\\WebScraperNew\\src\\main\\resources");
-        test.indexURLS("https://en.wikipedia.org/wiki/Cult_of_the_Lamb");
-
-        test.printValues();
+        Scanner scanner = new Scanner(System.in);
+        Indexer indexer = new Indexer("C:\\Users\\jvcer\\IdeaProjects\\WebScraperNew\\src\\main\\resources");
+        indexer.indexURLSClean("https://en.wikipedia.org/wiki/Cult_of_the_Lamb");
+        indexer.writeToCSV();
+        indexer.printNewURLS();
+        indexer.clearCSV();
     }
 }
