@@ -11,8 +11,7 @@ public class Driver {
         Scanner scanner = new Scanner(System.in);
         Indexer indexer = new Indexer("C:\\Users\\jvcer\\IdeaProjects\\WebScraperNew\\src\\main\\resources");
         indexer.indexURLSClean("https://en.wikipedia.org/wiki/Cult_of_the_Lamb");
-        indexer.writeToCSV();
-        indexer.printNewURLS();
-        indexer.clearCSV();
+        indexer.printURLS();
+//        indexer.writeToCSV();
     }
 }

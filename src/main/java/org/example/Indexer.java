@@ -7,42 +7,29 @@ import com.opencsv.CSVWriter;
 import org.jsoup.nodes.Document;
 
 public class Indexer {
-    private final File FILE;
-    private final FileWriter FILEWRITER;
-    private final ArrayList<String> EXISTINGURLS;
-    private final ArrayList<String> URLS;
+    public final File FILE;
+    public final FileWriter FILEWRITER;
+    public final ArrayList<String> URLS;
 
     public Indexer(String filePath) {
 
         // URLS Storage
         URLS = new ArrayList<>();
-        EXISTINGURLS = new ArrayList<>();
 
         // Creates a file object at the specified path
-        FILE = new File(filePath + "\\data.csv");
+        Date currentDate = new Date();
+        FILE = new File(filePath + "\\data" + currentDate + ".csv");
         System.out.println(FILE);
 
-        // Reads and stores existing
-        try {
-            Scanner scanner = new Scanner(FILE);
-                while (scanner.hasNextLine()) {
-                    EXISTINGURLS.add(scanner.nextLine());
-                }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
 
-        // Checks for pre-existing data
-        if (FILE.exists()) {
-            FILEWRITER = initializeFileWriter(FILE);
-        } else {
-            try {
-                FILE.createNewFile();
-                FILEWRITER = initializeFileWriter(FILE);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+//        try {
+//            FILE.createNewFile();
+//            FILEWRITER = initializeFileWriter(FILE);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+
+        FILEWRITER = null;
     }
 
     @Deprecated
@@ -134,41 +121,33 @@ public class Indexer {
                 // Changes the frame of reference for the next loop iteration to make sure the
                 limiter = end + 1;
 
+                // Adds URL link to the collection
                 URLS.add(temp.substring(start + 6, end));
             }
         }
 
         // Takes existing URLS ArrayList<String> and writes them to a CSV file format
-        public void writeToCSV() throws IOException {
-
-            for (String existingurl : EXISTINGURLS) {
-                FILEWRITER.write(existingurl);
-            }
-
-            for (String url : URLS) {
-                FILEWRITER.write(url);
-            }
-
-            FILEWRITER.close();
-        }
-
-        public void clearCSV() throws IOException {
+        public void writeToCSV() {
             try {
-                FILEWRITER.write("");
+                for (String url : URLS) {
+                    FILEWRITER.write(url + ",\n");
+                }
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        // Prints the values from
-        public void printNewURLS() {
-            for (String url : URLS) {
-                System.out.println(url);
-            }
-        }
+//        public void clearCSV()  {
+//            try {
+//                FILEWRITER.write("");
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        }
 
-        public void printOldURLS() {
-            for (String url : EXISTINGURLS) {
+        // Prints the values from
+        public void printURLS() {
+            for (String url : URLS) {
                 System.out.println(url);
             }
         }
