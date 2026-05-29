@@ -6,19 +6,31 @@ import org.jsoup.*;
 import com.opencsv.CSVWriter;
 import org.jsoup.nodes.Document;
 
-public class Indexer {
+public class UrlIndexerProMax {
     public final File FILE;
     public final FileWriter FILEWRITER;
     public final ArrayList<String> URLS;
 
-    public Indexer(String filePath) {
+    public UrlIndexerProMax(String filePath) throws IOException {
 
         // URLS Storage
         URLS = new ArrayList<>();
 
         // Creates a file object at the specified path
+
         Date currentDate = new Date();
-        FILE = new File(filePath + "\\data" + currentDate + ".csv");
+        String year = Integer.toString(currentDate.getYear()) + ".";
+        String month = Integer.toString(currentDate.getMonth()) + ".";
+        String day = Integer.toString(currentDate.getDay()) + ".";
+
+        // Time functionality of DATE class is not fully accurate
+        // Come back to later
+        FILE = new File(filePath +  "\\data" + year + month + day  + ".csv");
+        if (FILE.createNewFile()) {
+            FILEWRITER = initializeFileWriter(FILE);
+        } else {
+            FILEWRITER = initializeFileWriter(FILE);
+        }
         System.out.println(FILE);
 
 
@@ -29,7 +41,7 @@ public class Indexer {
 //            throw new RuntimeException(e);
 //        }
 
-        FILEWRITER = null;
+        // FILEWRITER = null;
     }
 
     @Deprecated
